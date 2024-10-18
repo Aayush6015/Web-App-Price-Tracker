@@ -1,0 +1,46 @@
+
+
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- <link rel="stylesheet" href="style.css"> -->
+    <title>Price Tracker</title>
+  
+</head>
+
+<body>
+    <div class="container">
+        <h1>Product Price Tracker</h1>
+
+        <form action="/" method="POST">
+            <label for="name">Product Name:</label>
+            <input type="text" name="name" required>
+            <br>
+            <label for="url">Product URL:</label>
+            <input type="url" name="url" required>
+            <br>
+            <label for="email">Your Email:</label>
+            <input type="email" name="email" required>
+            <br>
+            <button type="submit">Track Product</button>
+        </form
+
+        <h2>Tracked Products</h2>
+        <ul>
+            {% for product in products %}
+            <li>
+                <strong>{{ product.name }}</strong><br> 
+                Price: {% if product.price %}&#8377; {{ product.price }}{% else %}N/A{% endif %}<br>
+                Last updated: {% if product.last_updated %}{{ product.last_updated }}{% else %}Not yet updated{% endif %}
+                <a href="{{ url_for('view_graph', product_id=product._id) }}" target="_blank">View Price Variation Graph</a>
+            </li>
+            {% endfor %}
+        </ul>
+    </div>
+</body>
+
+</html>
