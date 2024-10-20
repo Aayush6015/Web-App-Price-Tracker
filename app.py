@@ -8,12 +8,8 @@ import base64
 import threading
 from scheduler import *
 
-
-
-# Initialize Flask app
 app = Flask(__name__)
 
-# MongoDB connection
 client = MongoClient("mongodb+srv://bithional:CSZuAvvAc3WEzl2I@cluster.oou5h.mongodb.net/")
 db = client["price_tracker"]
 products_collection = db["products"]
@@ -47,31 +43,23 @@ def view_graph(product_id):
     plt.close()
 
     return render_template('graph.html', graph_url=graph_url)
-
-# Modify insert_one logic in index route to add price history and timestamps
+    
 @app.route('/', methods=['GET', 'POST'])
 def index():
     if request.method == 'POST':
         product_name = request.form['name']
         product_url = request.form['url']
-        # user_email = request.form['email']  # Capture user email
-        
-        # Save product info and email to MongoDB
         products_collection.insert_one({
             'name': product_name,
             'url': product_url,
-            'price': None,  # Price will be updated by the scheduler
-            'last_updated': None,  # To track last price update
-            # 'email': user_email  # Store user email
+            'price': None,  
+            'last_updated': None,  
         })
         scrape_price(product_url)
         update_prices()
         return redirect(url_for('index'))
-    
-    # Get all products from the database to display on the front page
     products = products_collection.find()
     return render_template('index.html', products=products)
-# Flask route to view details of a specific product
 @app.route('/product/<product_id>')
 def view_product(product_id):
     product = products_collection.find_one({"_id": ObjectId(product_id)})
@@ -79,7 +67,6 @@ def view_product(product_id):
 
 @app.route('/delete/<product_id>', methods=['POST'])
 def delete_product(product_id):
-    # Find the product by its ID and delete it from the database
     result = products_collection.delete_one({"_id": ObjectId(product_id)})
     
     if result.deleted_count > 0:
@@ -98,8 +85,3 @@ if __name__ == '__main__':
     start_scheduler()
     app.run(debug=True)
 
-
-
-
-
-# client = MongoClient("mongodb+srv://bithional:CSZuAvvAc3WEzl2I@cluster.oou5h.mongodb.net/")
