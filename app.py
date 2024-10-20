@@ -1,20 +1,13 @@
 from flask import Flask, request, jsonify, render_template, redirect, url_for
-from selenium import webdriver
-from selenium.webdriver.chrome.service import Service
-from selenium.webdriver.chrome.options import Options
-from bs4 import BeautifulSoup
-
 from pymongo import MongoClient
 from datetime import datetime
 from bson.objectid import ObjectId
 import matplotlib.pyplot as plt
-import os
 from io import BytesIO
 import base64
 import threading
 from scheduler import *
-import time
-import re
+
 
 
 # Initialize Flask app
@@ -22,8 +15,8 @@ app = Flask(__name__)
 
 # MongoDB connection
 client = MongoClient("mongodb+srv://bithional:CSZuAvvAc3WEzl2I@cluster.oou5h.mongodb.net/")
-db = client.price_tracker
-products_collection = db.products
+db = client["price_tracker"]
+products_collection = db["products"]
 
 # Flask route to display price variation graph for a specific product
 @app.route('/product/<product_id>/graph')
@@ -61,7 +54,7 @@ def index():
     if request.method == 'POST':
         product_name = request.form['name']
         product_url = request.form['url']
-        user_email = request.form['email']  # Capture user email
+        # user_email = request.form['email']  # Capture user email
         
         # Save product info and email to MongoDB
         products_collection.insert_one({
@@ -69,7 +62,7 @@ def index():
             'url': product_url,
             'price': None,  # Price will be updated by the scheduler
             'last_updated': None,  # To track last price update
-            'email': user_email  # Store user email
+            # 'email': user_email  # Store user email
         })
         scrape_price(product_url)
         update_prices()
@@ -83,6 +76,18 @@ def index():
 def view_product(product_id):
     product = products_collection.find_one({"_id": ObjectId(product_id)})
     return render_template('product.html', product=product)
+
+@app.route('/delete/<product_id>', methods=['POST'])
+def delete_product(product_id):
+    # Find the product by its ID and delete it from the database
+    result = products_collection.delete_one({"_id": ObjectId(product_id)})
+    
+    if result.deleted_count > 0:
+        print(f"Successfully deleted product with ID {product_id}")
+    else:
+        print(f"Failed to delete product with ID {product_id}")
+    
+    return redirect(url_for('index'))
 
 def start_scheduler():
     thread = threading.Thread(target=run_scheduler)
