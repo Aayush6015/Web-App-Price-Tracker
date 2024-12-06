@@ -10,7 +10,7 @@ from scheduler import *
 
 app = Flask(__name__)
 
-client = MongoClient("mongodb+srv://bithional:CSZuAvvAc3WEzl2I@cluster.oou5h.mongodb.net/")
+client = MongoClient("mongodb+srv://<username>:<password>@cluster.oou5h.mongodb.net/")
 db = client["price_tracker"]
 products_collection = db["products"]
 
